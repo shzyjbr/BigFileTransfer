@@ -15,6 +15,9 @@ import static com.hhu.protocol.command.Command.*;
 
 public class Codec {
 
+	/**
+	 * 校验魔术字
+	 */
 	public static final int TYPE = 0x12345678;
 
 	private final Map<Byte, Class<? extends Packet>> packetTypeMap;

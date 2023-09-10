@@ -32,17 +32,20 @@ public class Client {
 				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
 				.option(ChannelOption.SO_KEEPALIVE, true)
 				.option(ChannelOption.TCP_NODELAY, true)
+				// 登录： DecodeHandle -> LoginResponseHandler
+				// 接收文件： 1. 文件信息： FileReceiveClientHandler -> FileSendClientHandler(在这里做消息的类型转换) ->FilePacketClientHandler<FilePacket> 接收后回复客户端一个Ack+1的值，也就是1
+				// 接收文件： 2. 文件内容： FileReceiveClientHandler(重复调用channelRead来接收文件内容) 随后就结束了，其原因是调用了bytebuf的release方法，将引用计数减一，当引用计数为0时，会被回收，也就不会传递给下一个handler了
 				.handler(new ChannelInitializer<NioSocketChannel>() {
 					@Override
 					protected void initChannel(NioSocketChannel channel) throws Exception {
 						ChannelPipeline pipeline = channel.pipeline();
-						pipeline.addLast(new FileReceiveClientHandler());
-						pipeline.addLast(new FileSendClientHandler());
-						pipeline.addLast(new DecodeHandler());
-						pipeline.addLast(new EncodeHandler());
-						pipeline.addLast(new ChunkedWriteHandler());
-						pipeline.addLast(new LoginResponseHandler());
-						pipeline.addLast(new FilePacketClientHandler());
+						pipeline.addLast(new FileReceiveClientHandler()); //入站第一个handler
+						pipeline.addLast(new FileSendClientHandler());    //入站第二个handler
+						pipeline.addLast(new DecodeHandler());			  //入站第三个handler
+						pipeline.addLast(new EncodeHandler());        						// 出站第二个handler
+						pipeline.addLast(new ChunkedWriteHandler());   						// 出站第一个handler
+						pipeline.addLast(new LoginResponseHandler());     // 入站第四个handler
+						pipeline.addLast(new FilePacketClientHandler());  // 入站第五个handler
 						// pipeline.addLast(new MyClientHandler());
 					}
 				});

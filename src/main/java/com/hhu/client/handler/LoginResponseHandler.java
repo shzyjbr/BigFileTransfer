@@ -7,6 +7,9 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.util.Date;
 
+/**
+ * 处理登录回复消息的处理器
+ */
 @ChannelHandler.Sharable
 public class LoginResponseHandler extends SimpleChannelInboundHandler<LoginResponsePacket> {
 	@Override

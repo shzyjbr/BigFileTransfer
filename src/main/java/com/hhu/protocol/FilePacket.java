@@ -9,7 +9,10 @@ import static com.hhu.protocol.command.Command.FILE_PACKET;
 public class FilePacket extends Packet {
 
 	File file;
-
+	/**
+	 * 0 是文件信息包
+	 * 大于1 是文件内容
+	 */
 	int ACK;
 
 	@Override

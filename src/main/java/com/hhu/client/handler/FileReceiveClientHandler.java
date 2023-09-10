@@ -33,6 +33,7 @@ public class FileReceiveClientHandler extends ChannelInboundHandlerAdapter {
 		byte[] bytes = new byte[byteBuf.readableBytes()];
 		byteBuf.readBytes(bytes);
 		outputStream.write(bytes);
+		// 调用了bytebuf的release方法，将引用计数减一，当引用计数为0时，会被回收，也就不会传递给下一个handler了
 		byteBuf.release();
 	}
 
