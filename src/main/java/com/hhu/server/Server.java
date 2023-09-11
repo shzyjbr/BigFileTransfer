@@ -10,6 +10,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 import java.util.Scanner;
 
@@ -27,6 +28,9 @@ public class Server {
 				.channel(NioServerSocketChannel.class)
 				.option(ChannelOption.SO_BACKLOG, 1024)
 				.option(ChannelOption.TCP_NODELAY, true)
+				// 客户端登录：入站 FileReceiveServerHandler -> FileSendServerHandler -> DecodeHandler(LoginPakcet) -> JoinClusterRequestHandler(写回响应) -> EncodeHandler
+				// 客户端文件传输： 一开始的FilePacket文件信息会经过FileReceiveServerHandler、FileSendServerHandler、FilePacketServerHandler
+				//					随后发送文件内容， 只经过FileReceiveServerHandler的writeToFile，该方法调用了byteBuf.release();
 				.childHandler(new ChannelInitializer<NioSocketChannel>() {
 					@Override
 					protected void initChannel(NioSocketChannel channel) throws Exception {
@@ -35,6 +39,7 @@ public class Server {
 						pipeline.addLast(new FileSendServerHandler());
 						pipeline.addLast(new DecodeHandler());
 						pipeline.addLast(new EncodeHandler());
+						pipeline.addLast(new ChunkedWriteHandler());
 						pipeline.addLast(new JoinClusterRequestHandler());
 						pipeline.addLast(new FilePacketServerHandler());
 						// pipeline.addLast("handler", new MyServerHandler());
